@@ -1,16 +1,21 @@
-import { GRID_SIZE, TICK_RATE, type Point } from "../types";
+import { GRID_SIZE, type Point } from "../types";
 import { randomPosition } from "../utils/helper";
 
 export const GameLoop = (entities: any, {input, time, dispatch}: any) => {
-    const control = entities.control
-    const snake = entities.snake
-    const apple = entities.apple
+    const control = entities.control;
+    const snake = entities.snake;
+    const apple = entities.apple;
+    const obstacles = entities.obstacles;
 
     //Input logic
     const keyPressed = input.filter((x: any) => x.name === "onKeyDown");
 
     keyPressed.forEach((e: any) => {
         const key = e.payload.key.toLowerCase()
+
+        if (key === "p"){
+            dispatch({type: "toggle-pause"});
+        }
 
         if((key === "w" || key === "arrowup") && control.direction !== "DOWN")
             control.nextDirection = "UP"
@@ -22,9 +27,13 @@ export const GameLoop = (entities: any, {input, time, dispatch}: any) => {
             control.nextDirection = "RIGHT"
     });
 
+
+    //Start speed 180ms 
+    const currentSpeed = Math.max(60, 180 - (control.score * 5));
+
     //Movement Logic
 
-    if(time.current - control.lastUpdate > TICK_RATE) {
+    if(time.current - control.lastUpdate > currentSpeed) {
         control.lastUpdate = time.current;
         control.direction = control.nextDirection;
 
@@ -57,6 +66,16 @@ export const GameLoop = (entities: any, {input, time, dispatch}: any) => {
             return entities;
         }
 
+        //Obstacle collision
+        if(
+            obstacles.positions.some(
+                (obs: Point) => obs.x === newHead.x && obs.y === newHead.y
+            )
+        ){
+            dispatch({type: "game-over"});
+            return entities;
+        }
+
         snake.segments.unshift(newHead);
 
         //Apple collision
@@ -64,10 +83,10 @@ export const GameLoop = (entities: any, {input, time, dispatch}: any) => {
             newHead.x === apple.position.x &&
             newHead.y === apple.position.y
         ) {
+            control.score += 1;
             dispatch({type: "score-up"});
 
             let isOcupied = true;
-
             while (isOcupied){
                 apple.position = randomPosition();
                 isOcupied = snake.segments.some(
