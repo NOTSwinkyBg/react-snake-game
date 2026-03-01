@@ -5,6 +5,7 @@ import SnakeRenderer from './components/SnakeRenderer'
 import AppleRenderer from './components/AppleRenderer'
 import { ObstacleRenderer } from './components/ObstacleRenderer'
 import { GameLoop } from './systems/GameLoop'
+import { generateObstacles } from './utils/helper'
 
 export default function App() {
     const [score, setScore] = useState(0);
@@ -19,33 +20,35 @@ export default function App() {
 
     const engineRef = useRef<any>(null);
 
-    const setupEntities = () => ({
-        control: {
-            direction: "UP",
-            nextDirection: "UP",
-            lastUpdate: 0,
-            score: 0
-        },
-        snake: {
-            segments: [
-                { x: 10, y: 15 },
-                { x: 10, y: 16 },
-                { x: 10, y: 17 },
-            ],
-            renderer: SnakeRenderer,
-        },
-        apple: {
-            position: { x: 10, y: 5},
-            renderer: AppleRenderer,
-        },
-        obstacles: {
-            positions: [
-                { x: 5, y: 10}, { x: 6, y: 10}, { x: 7, y: 10},
-                { x: 14, y: 10}, { x: 13, y: 10}, { x: 12, y: 10}
-            ],
-            renderer: <ObstacleRenderer />,
-        }
-    });
+    const setupEntities = () => {
+        const snakeSegments = [
+            { x: 10, y: 15},
+            { x: 10, y: 16},
+            { x: 10, y: 17},
+        ];
+
+        const applePosition = { x: 10, y: 5};
+
+        return {
+            control: {direction: 'UP', nextDirection: 'UP', lastUpdate: 0, score: 0},
+            snake: {
+                segments: snakeSegments,
+                renderer: SnakeRenderer
+            },
+            apple: {
+                position: applePosition,
+                renderer: AppleRenderer
+            },
+            obstacles: {
+                positions: generateObstacles(
+                    15,
+                    snakeSegments,
+                    applePosition
+                ),
+                renderer: <ObstacleRenderer/>
+            }
+        };
+    };
 
     const onEvent = (e: any) => {
         if (e.type === "score-up") {

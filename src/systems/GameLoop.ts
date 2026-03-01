@@ -89,10 +89,19 @@ export const GameLoop = (entities: any, {input, time, dispatch}: any) => {
             let isOcupied = true;
             while (isOcupied){
                 apple.position = randomPosition();
-                isOcupied = snake.segments.some(
-                    (p: Point) =>
-                        p.x === apple.position.x && p.y === apple.postion.y
-                );
+                // isOcupied = snake.segments.some(
+                //     (p: Point) =>
+                //         p.x === apple.position.x && p.y === apple.postion.y
+                // isOcupied = obstacles.positions.some(
+                //     (p: Point) =>
+                //         p.x === apple.position.x && p.y === apple.postion.y        
+                // );
+                const inSnake = snake.segments.some((p: Point) => 
+                    p.x === apple.position.x && p.y === apple.position.y);
+                const inObs = obstacles.positions.some((p: Point) => 
+                    p.x === apple.position.x && p.y === apple.position.y);
+
+                isOcupied = inSnake || inObs;
             }
         } else {
             snake.segments.pop();
